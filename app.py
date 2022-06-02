@@ -94,7 +94,7 @@ class RegisterForm(FlaskForm):
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(Email = form.email.data).first()
+        user = User.query.filter_by(Email = form.email.data,Username = form.username.data).first()
         if user is None:
             hashedPwd = generate_password_hash(form.password.data)
             user = User(Username=form.username.data, Name=form.name.data, Email=form.email.data, PasswordHashed=hashedPwd, Phone=form.phone.data, UserType = form.userType.data)
