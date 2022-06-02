@@ -1,10 +1,6 @@
-from enum import unique
-from tokenize import String
 from typing import Text
 from flask import Flask, render_template, flash, request, redirect, url_for
 from flask_wtf import FlaskForm
-from matplotlib.pyplot import cool
-import sqlalchemy
 from wtforms import StringField, SubmitField, PasswordField, BooleanField,ValidationError, DateField, IntegerField, RadioField
 from wtforms.validators import DataRequired, EqualTo, Length,Email,InputRequired
 from werkzeug.security import generate_password_hash,check_password_hash
