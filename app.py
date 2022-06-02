@@ -1,4 +1,3 @@
-from typing import Text
 from flask import Flask, render_template, flash, request, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField,ValidationError, DateField, IntegerField, RadioField
@@ -53,11 +52,42 @@ class RegisterForm(FlaskForm):
     password2 = PasswordField("Re-enter Password",validators=[DataRequired()])
     submit = SubmitField("Submit")
 
+#WTF FORMS TYPES
+# BooleanField
+	# DateField
+	# DateTimeField
+	# DecimalField
+	# FileField
+	# HiddenField
+	# MultipleField
+	# FieldList
+	# FloatField
+	# FormField
+	# IntegerField
+	# PasswordField
+	# RadioField
+	# SelectField
+	# SelectMultipleField
+	# SubmitField
+	# StringField
+	# TextAreaField
 
-#Creating a form class 
-# class NameForm(FlaskForm):
-#     name = StringField("What's your name ? ", validators=[DataRequired()])
-#     submit = SubmitField("Submit")
+	## Validators
+	# DataRequired
+	# Email
+	# EqualTo
+	# InputRequired
+	# IPAddress
+	# Length
+	# MacAddress
+	# NumberRange
+	# Optional
+	# Regexp
+	# URL
+	# UUID
+	# AnyOf
+	# NoneOf
+
 
 
 @app.route('/register',methods = ['POST','GET'])
