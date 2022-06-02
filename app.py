@@ -87,8 +87,17 @@ class RegisterForm(FlaskForm):
 	# UUID
 	# AnyOf
 	# NoneOf
+class LoginForm(FlaskForm):
+	username = StringField("UserName",validators=[DataRequired()])
+	password = PasswordField("Password", validators = [DataRequired()])
+	submit = SubmitField("Submit") 
 
-
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+@login_manager.user_loader
+def load_user(user_id):
+	return User.query.get(int(user_id))
 
 @app.route('/register',methods = ['POST','GET'])
 def register():
@@ -114,6 +123,24 @@ def register():
         form.password.data = ''
     
     return render_template('register.html', form = form)
+
+@app.route('/login',methods =['GET','POST'])
+def login():
+	form = LoginForm()
+	if form.validate_on_submit:
+		user = users.query.filter_by(Username=form.username.data).first()
+		if user:
+			#Checking hash
+			if check_password_hash(user.PasswordHashed,form.password.data):
+				login_user(user)
+				return redirect(url_for('dashboard'))
+			else:
+				flash("Wrong Password")
+		else:
+			flash("This user doesnt exist")		
+
+	return render_template('login.html',
+		form = form)
 
 @app.route('/')#It is a decorator (what URL to be accessed)
 def index():
