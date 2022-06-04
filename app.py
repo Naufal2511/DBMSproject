@@ -17,14 +17,14 @@ app.config['SECRET_KEY'] = "jdhsjjhhjshjkhskdsj"
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
 
-class User(db.Model):
+class User(db.Model,UserMixin):
     Id = db.Column(db.Integer,primary_key = True)
     Username = db.Column(db.String(200), nullable = False, unique = True)
     Name = db.Column(db.String(200), nullable = False)
     Email = db.Column(db.String(200),nullable = False)
     PasswordHashed = db.Column(db.String(300),nullable = False)
     Phone = db.Column(db.String(12),nullable=True)
-    UserType = db.Column(db.String(10))
+    UserType = db.Column(db.String(100),nullable = False)
     Date_added = db.Column(db.DateTime, default=datetime.utcnow)
     def get_id(self):
         return (self.Id)
@@ -126,21 +126,70 @@ def register():
 
 @app.route('/login',methods =['GET','POST'])
 def login():
-	form = LoginForm()
-	if form.validate_on_submit:
-		user = users.query.filter_by(Username=form.username.data).first()
-		if user:
-			#Checking hash
-			if check_password_hash(user.PasswordHashed,form.password.data):
-				login_user(user)
-				return redirect(url_for('dashboard'))
-			else:
-				flash("Wrong Password")
-		else:
-			flash("This user doesnt exist")		
+    form = LoginForm()
+    if form.validate_on_submit:
+        user = User.query.filter_by(Username=form.username.data).first()
+        if user:
+            #Checking hash
+            if check_password_hash(user.PasswordHashed,form.password.data):
+                login_user(user)
+                print("Hi")
+                # return redirect(url_for('redirectUsers'))
+                if(user.UserType == 'Participant'):
+                    flash("Redirecting to Participant page")
+                    return redirect(url_for('dashboard_participant')) 
+                if(user.UserType == 'Organizer'):
+                    flash("Redirecting to Organiser page")  
+                    return redirect(url_for('dashboard_organiser'))
+                if(user.UserType == 'Admin'):
+                    flash("Redirecting to Admin Page")
+                    return redirect(url_for('dashboard_admin'))
+            else:
+                flash("Wrong Password")
+        else:
+            flash("This user doesnt exist")		
 
-	return render_template('login.html',
+    return render_template('login.html',
 		form = form)
+
+# @app.route('/redirectUsers')
+# def redirectUsers():
+#     if(current_user.UserType == 'Participant'):
+#         return redirect(url_for('dashboard_participant')) 
+#     if(current_user.UserType == 'Organiser'):
+#         return redirect(url_for('dashboard_organiser')) 
+
+
+@app.route('/dashboard_participant')
+@login_required
+def dashboard_participant():
+    if(current_user.is_authenticated):
+        return render_template("dashboardP.html")
+    else:
+        return redirect('login')
+    
+@app.route('/dashboard_organiser')
+@login_required
+def dashboard_organiser():
+    if(current_user.is_authenticated):
+        return render_template("dashboardO.html")
+    else:
+        return redirect('login')
+
+@app.route('/dashboard_admin')
+@login_required
+def dashboard_admin():
+    if(current_user.is_authenticated):
+        return render_template("dashboardA.html",
+            Name = current_user.Name)
+    else:
+        return redirect('login')
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 @app.route('/')#It is a decorator (what URL to be accessed)
 def index():
