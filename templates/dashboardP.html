@@ -14,7 +14,36 @@ Register
 {% endfor %}
 
 <div class="container">
-    <h1>HI {{ current_user.Name }} </h1>
+    <div class="shadow p-3 mb-5 bg-body rounded">
+        <h3>Name : {{ current_user.Name }}</h3><br/>
+        <h3>UserName : {{current_user.Username}}</h3>
+    </div>
+    <div class="container">
+        <div class="row justify-content-sm-center">
+            <div class="card col-3 ">
+               <a href="{{url_for('eventsPT')}}">
+                <img class="card-img-top " src="images/download.jpeg" style="width: 345px;height: 200px;" alt="Card image cap">
+                <div class="card-body">
+                <h5 class="card-title">Technical Events</h5>
+                <p class="card-text">Show off your technical skills and passion by entering the worlds finest tech events.</p>
+                </div>
+                <div class="card-footer text-center">
+                <small class="text-muted"><button type="button" class="btn btn-info" data-toggle="modal" data-target="#interviewModel">Enter</button></small>
+                </div>
+                </a> 
+            </div>
+            <div class="card col-3">
+                <img class="card-img-top " src="images/download.jpeg" style="width: 345px;height: 200px;" alt="Card image cap">
+                <div class="card-body">
+                <h5 class="card-title">Non-Technical Events</h5>
+                <p class="card-text">Want to explore outside tech ? Enter to join the world of exploration with amazing non-tech events.</p>
+                </div>
+                <div class="card-footer text-center">
+                <small class="text-muted"><button type="button" class="btn btn-info" data-toggle="modal" data-target="#interviewModel">Enter</button></small>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endblock %} 

@@ -1,6 +1,7 @@
+from cv2 import DrawMatchesFlags_DRAW_OVER_OUTIMG
 from flask import Flask, render_template, flash, request, redirect, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField,ValidationError, DateField, IntegerField, RadioField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField,ValidationError, DateField, IntegerField, RadioField, DateTimeField
 from wtforms.validators import DataRequired, EqualTo, Length,Email,InputRequired
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -41,6 +42,18 @@ class User(db.Model,UserMixin):
         # Create A String
     def __repr__(self):
         return '<Name %r>' % self.name
+
+class Events(db.Model,UserMixin):
+    Id = db.Column(db.Integer,primary_key = True)
+    EventName = db.Column(db.String(200),nullable = False)
+    EventPrize = db.Column(db.String(200),nullable = False)
+    EventDateTime = db.Column(db.DateTime,default=datetime.utcnow)
+    EventVenue = db.Column(db.String(200),nullable = False)
+    EventRules = db.Column(db.String(500),nullable=False)
+    EventType = db.Column(db.String(100),nullable=False)
+    EventContact = db.Column(db.String(100),nullable = False)
+    def get_id(self):
+        return (self.Id)
 
 class RegisterForm(FlaskForm):
     username = StringField("Username",validators=[DataRequired()])
@@ -91,6 +104,16 @@ class LoginForm(FlaskForm):
 	username = StringField("UserName",validators=[DataRequired()])
 	password = PasswordField("Password", validators = [DataRequired()])
 	submit = SubmitField("Submit") 
+
+class AddEventForm(FlaskForm):
+    eventname = StringField("Event Name",validators=[DataRequired()])
+    eventtype = RadioField("Event Type", choices=['Technical','Non-technical'],validators=[InputRequired()])
+    eventrules = StringField("Event Instructions",validators=[DataRequired()], widget=TextArea())
+    eventvenue = StringField("Event Venue",validators=[DataRequired()])
+    eventdatetime = DateField("Event date", validators=[DataRequired()])
+    eventprize = StringField("Prize", validators=[DataRequired()])
+    eventcontact = StringField("Contact", validators=[DataRequired(), Length(10,12)] )
+    submit = SubmitField("Submit") 
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -159,6 +182,12 @@ def login():
 #     if(current_user.UserType == 'Organiser'):
 #         return redirect(url_for('dashboard_organiser')) 
 
+@app.route('/event_participant')
+@login_required
+def eventsPT():
+    events = Events.query.filter_by(EventType = 'Technical')
+    return render_template('eventsPT.html',
+        events = events)
 
 @app.route('/dashboard_participant')
 @login_required
@@ -180,10 +209,79 @@ def dashboard_organiser():
 @login_required
 def dashboard_admin():
     if(current_user.is_authenticated):
+        events = Events.query.all()
         return render_template("dashboardA.html",
-            Name = current_user.Name)
+            events = events)
     else:
         return redirect('login')
+
+@app.route('/add_event',methods=['POST','GET'])
+@login_required
+def add_event():
+    print("Hi")
+    if(current_user.UserType == 'Admin'):
+        form = AddEventForm()
+        if form.validate_on_submit():
+            event = Events.query.filter_by(EventName=form.eventname.data).first()
+            if event is None:
+                event = Events(EventName=form.eventname.data,EventType=form.eventtype.data,
+                    EventRules=form.eventrules.data,EventVenue=form.eventvenue.data,
+                    EventDateTime = form.eventdatetime.data, EventPrize = form.eventprize.data,
+                    EventContact = form.eventcontact.data)
+                form.eventname.data = ''
+                form.eventrules.data = ''
+                form.eventvenue.data = ''
+                form.eventdatetime.data = datetime.now()
+                form.eventprize.data = ''
+                form.eventcontact.data = ''
+
+                db.session.add(event)
+                db.session.commit()
+                flash("Event added successfully")
+                return redirect(url_for("dashboard_admin"))
+            else:
+                flash("Event already exists ! Try updating it")
+        return render_template("add_event.html", form= form)
+    else:
+        flash("You should be an admin to edit")
+        return redirect('home.html')
+
+@app.route('/update/<int:Id>',methods=['POST','GET'])
+def update(Id):
+    form = AddEventForm()
+    record_to_update = Events.query.get_or_404(Id)
+    if request.method == 'POST':
+        record_to_update.EventName = request.form['eventname']
+        record_to_update.EventVenue = request.form['eventvenue']
+        record_to_update.EventRules = request.form['eventrules']
+        record_to_update.EventDateTime = request.form['eventdatetime']
+        record_to_update.EventContact = request.form['eventcontact']
+        try:
+            db.session.commit()
+            flash("Event Updated Successfully")
+            return render_template("eventupdate.html",
+                    form=form,
+                    record_to_update=record_to_update)
+        except:
+            flash("Event could not be updated")
+            return render_template("eventupdate.html",
+                    form=form,
+                    record_to_update=record_to_update)
+    else:
+        return render_template("eventupdate.html",
+                    form=form,
+                    record_to_update=record_to_update)
+@app.route('/delete/<int:Id>')
+def delete(Id):
+	try:
+		event_to_delete = Events.query.get_or_404(Id)
+		db.session.delete(event_to_delete)
+		db.session.commit()
+		flash("Successfully deleted")
+	except:
+		flash("unable to delete")
+		
+	return redirect(url_for("dashboard_admin"))
 
 @app.route("/logout")
 @login_required

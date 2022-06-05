@@ -1,0 +1,61 @@
+
+{% extends 'base.html' %}
+{% block title %} 
+Update Event
+{% endblock %}  
+{% block content %}
+
+{% for message in get_flashed_messages() %}
+	
+	<div class="alert alert-warning alert-dismissible fade show" role="alert">
+	  {{ message }}
+	  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+
+{% endfor %}
+<h1>Update User {{ record_to_update.Name }}</h1>
+<br/>
+<div class="shadow p-3 mb-5 bg-body rounded">
+<form action="/update/{{record_to_update.Id}}" method="POST">
+    {{ form.hidden_tag() }}
+
+	{{ form.eventname.label(class="form-label") }}
+
+	{{ form.eventname(class="form-control", value = record_to_update.EventName) }}
+	<br/>
+    {{ form.eventtype.label }}
+    <br/>
+    {% for items in form.eventtype %}
+    <div class="form-check">
+        {{ items.label(class="form-check-label") }}
+
+        {{ items(class="form-check-input") }}
+     </div>
+    {% endfor %}
+    <br/>
+	{{ form.eventrules.label(class="form-label") }}
+
+	{{ form.eventrules(class="form-control", rows = 5, value = record_to_update.EventRules) }}
+	<br/>
+	{{ form.eventvenue.label(class="form-label") }}
+
+	{{ form.eventvenue(class="form-control", value = record_to_update.EventVenue) }}
+	<br/>
+    {{ form.eventdatetime.label(class_="form-label") }}
+
+	{{ form.eventdatetime(class="form-control", value = record_to_update.EventDateTime) }}
+
+	<br/>
+    {{ form.eventprize.label(class="form-label") }}
+
+	{{ form.eventprize(class="form-control", value = record_to_update.EventPrize) }}
+	<br/>
+	{{ form.eventcontact.label(class="form-label") }}
+
+	{{ form.eventcontact(class="form-control", value = record_to_update.EventContact) }}
+	<br/>
+	{{ form.submit(class="btn btn-secondary") }}
+
+</form>
+</div>
+{% endblock %} 
