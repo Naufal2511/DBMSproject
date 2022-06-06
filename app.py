@@ -1,3 +1,4 @@
+import re
 from cv2 import DrawMatchesFlags_DRAW_OVER_OUTIMG
 from flask import Flask, render_template, flash, request, redirect, url_for
 from flask_wtf import FlaskForm
@@ -64,6 +65,26 @@ class Events(db.Model,UserMixin):
     def get_id(self):
         return (self.Id)
 
+class Organizer(db.Model):
+    Id = db.Column(db.Integer,primary_key = True)
+    userId = db.Column(db.Integer)
+    EventId = db.Column(db.Integer)
+
+class RequestedEvents(db.Model):
+    Id = db.Column(db.Integer,primary_key = True)
+    EventName = db.Column(db.String(200),nullable = False)
+    EventPrize = db.Column(db.String(200),nullable = False)
+    EventDateTime = db.Column(db.DateTime,default=datetime.utcnow)
+    EventVenue = db.Column(db.String(200),nullable = False)
+    EventRules = db.Column(db.String(500),nullable=False)
+    EventType = db.Column(db.String(100),nullable=False)
+    EventContact = db.Column(db.String(100),nullable = False)
+    OrganizerId = db.Column(db.Integer,nullable=False)
+    Status = db.Column(db.Integer,nullable = False)
+
+    def get_id(self):
+        return (self.Id)
+
 class RegisterForm(FlaskForm):
     username = StringField("Username",validators=[DataRequired()])
     name = StringField("Name",validators=[DataRequired()])
@@ -74,41 +95,6 @@ class RegisterForm(FlaskForm):
     password2 = PasswordField("Re-enter Password",validators=[DataRequired()])
     submit = SubmitField("Submit")
 
-#WTF FORMS TYPES
-# BooleanField
-	# DateField
-	# DateTimeField
-	# DecimalField
-	# FileField
-	# HiddenField
-	# MultipleField
-	# FieldList
-	# FloatField
-	# FormField
-	# IntegerField
-	# PasswordField
-	# RadioField
-	# SelectField
-	# SelectMultipleField
-	# SubmitField
-	# StringField
-	# TextAreaField
-
-	## Validators
-	# DataRequired
-	# Email
-	# EqualTo
-	# InputRequired
-	# IPAddress
-	# Length
-	# MacAddress
-	# NumberRange
-	# Optional
-	# Regexp
-	# URL
-	# UUID
-	# AnyOf
-	# NoneOf
 class LoginForm(FlaskForm):
 	username = StringField("UserName",validators=[DataRequired()])
 	password = PasswordField("Password", validators = [DataRequired()])
@@ -123,6 +109,7 @@ class AddEventForm(FlaskForm):
     eventprize = StringField("Prize", validators=[DataRequired()])
     eventcontact = StringField("Contact", validators=[DataRequired(), Length(10,12)] )
     submit = SubmitField("Submit") 
+
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -179,7 +166,7 @@ def login():
                     return redirect(url_for('dashboard_participant')) 
                 if(user.UserType == 'Organizer'):
                     flash("Redirecting to Organiser page")  
-                    return redirect(url_for('dashboard_organiser'))
+                    return redirect(url_for('dashboard_organizer'))
                 if(user.UserType == 'Admin'):
                     flash("Redirecting to Admin Page")
                     return redirect(url_for('dashboard_admin'))
@@ -302,11 +289,18 @@ def dashboard_participant():
     else:
         return redirect('login')
     
-@app.route('/dashboard_organiser')
+@app.route('/dashboard_organizer')
 @login_required
-def dashboard_organiser():
-    if(current_user.is_authenticated):
-        return render_template("dashboardO.html")
+def dashboard_organizer():
+    if(current_user.is_authenticated and current_user.UserType == 'Organizer'):
+        organiserTag = RequestedEvents.query.filter_by(OrganizerId = current_user.Id).first()
+        if organiserTag is None:
+            events = None
+            return render_template("dashboardO.html",events=events)
+        else:
+            events = Events.query.filter_by(Id = organiserTag.EventId)
+            return render_template("dashboardO.html",events=events,status=organiserTag.Status)
+
     else:
         return redirect('login')
 
@@ -320,6 +314,80 @@ def dashboard_admin():
     else:
         flash("Something went wrong")
         return redirect('login')
+
+@app.route('/approve_requests')
+@login_required
+def approve_requests():
+    if(current_user.UserType == 'Admin'):
+        revents = RequestedEvents.query.all()
+        return render_template("approve_requests.html",
+                revents = revents)
+    else:
+        flash("Something went wrong")
+        return redirect('login')
+    
+@app.route('/approve/<int:Id>', methods = ['POST','GET'])
+@login_required
+def approve(Id):
+    record_to_update = RequestedEvents.query.get_or_404(Id)
+
+    record_to_update.Status = 2
+    events = Events(EventName = record_to_update.EventName, EventPrize = record_to_update.EventPrize, EventDateTime = record_to_update.EventDateTime, EventVenue = record_to_update.EventVenue, EventRules = record_to_update.EventRules, EventType = record_to_update.EventType, EventContact = record_to_update.EventContact)
+    db.session.add(events)
+    db.session.commit()
+    event = Events.query.filter_by(EventName = record_to_update.EventName).first()
+    organiser = Organizer(userId = record_to_update.OrganizerId, EventId = event.Id)
+    db.session.add(organiser)
+    db.session.commit()
+
+    flash('Request Approved')
+    return redirect(url_for('approve_requests'))
+
+@app.route('/reject/<int:Id>', methods = ['POST','GET'])
+@login_required
+def reject(Id):
+    record_to_update = RequestedEvents.query.get_or_404(Id)
+    record_to_update.Status = 0
+    db.session.commit()
+
+    flash('Request Rejected')
+    return redirect(url_for('approve_requests'))
+
+@app.route('/info/<int:Id>')
+@login_required
+def info(Id):
+    record_to_update = User.query.filter_by(Id = Id).first()
+    print(record_to_update.Name)
+    return render_template("info.html",record_to_update = record_to_update)
+
+
+@app.route('/add_event_organizer',methods=['POST','GET'])
+@login_required
+def add_event_organizer():
+    if(current_user.UserType == 'Organizer'):
+        form = AddEventForm()
+        if form.validate_on_submit():   
+            event = Events.query.filter_by(EventName = form.eventname.data).first()
+            Revent = RequestedEvents(EventName=form.eventname.data,EventType=form.eventtype.data,
+                    EventRules=form.eventrules.data,EventVenue=form.eventvenue.data,
+                    EventDateTime = form.eventdatetime.data, EventPrize = form.eventprize.data,
+                    EventContact = current_user.Phone, OrganizerId = current_user.Id, Status = 1)
+            # organiser = Organizer(userId = current_user.Id, EventId = event.Id)
+            form.eventname.data = ''
+            form.eventrules.data = ''
+            form.eventvenue.data = ''
+            form.eventdatetime.data = datetime.now()
+            form.eventprize.data = ''
+            # form.eventcontact.data = ''
+            db.session.add(Revent)
+            db.session.commit()
+            # db.session.add(organiser)
+            # db.session.commit()
+            flash("Request Sent Successfully !")
+        return render_template("add_event_o.html", form= form)
+    else:
+        flash("You should be an organizer to request")
+        return redirect('index.html')
 
 @app.route('/add_event',methods=['POST','GET'])
 @login_required
@@ -404,13 +472,7 @@ def logout():
 
 @app.route('/')#It is a decorator (what URL to be accessed)
 def index():
-    firstName = "John"
-    stuff = "This is bold text"
-    favoritePizza = ["Pepperoni" , "Cheese" , "Chilli" , 41]
-    return render_template("index.html",
-        firstName = firstName,
-        stuff =stuff,
-        favoritePizza=favoritePizza)
+    return render_template("index.html")
 
 @app.route('/register_event/<int:Id>')
 @login_required
@@ -425,10 +487,7 @@ def register_event(Id):
     print(sql_insert)
     my_cursor.execute(sql_insert)
 
-
     return redirect(url_for('dashboard_participant'))
-
-    
 
 #Creating custom error pages
 @app.errorhandler(404)

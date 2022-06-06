@@ -20,20 +20,25 @@ Register
     <a class= "btn btn-secondary" href="{{url_for('add_event')}}">
       Add Event
     </a>
-    {% if events  %} 
+    {% if revents %} 
 
-      {% for event in events %}
+      {% for event in revents %}
+      {% if event.Status == 1 %}
       <div class="shadow p-3 mb-5 bg-body rounded">
         <div class="h2">{{ event.EventName }}</div><br/>
         <div class="h4">{{ event.EventVenue }}</div><br/>
         <div class="h6">{{ event.EventRules }}</div><br/>
         <div class="h5">{{ event.EventDateTime }}</div><br/>
-        <div class="h5">{{ event.EventPrize }}</div><br/>
         <div class="h5">{{ event.EventContact }}</div><br/>
-        
-        <a class="btn btn-primary" href = "{{url_for('update',Id=event.Id)}}">Edit</a>
-        <a class="btn btn-danger" href = "{{url_for('delete',Id=event.Id)}}">Delete</a>
+        <div class="h5">{{ event.EventPrize }}</div><br/>
+
+        <a class="btn btn-primary" href = "{{url_for('approve',Id=event.Id)}}">Approve</a>
+        <a class="btn btn-danger" href = "{{url_for('reject', Id=event.Id)}}">Reject</a>
+
+        <a class="btn btn-info" href = "{{url_for('info',Id=event.OrganizerId)}}">Requestor Details</a>
       </div>
+      {% endif %} 
+
       {% endfor %}
     {% else %}
       <br/>
@@ -43,4 +48,4 @@ Register
 
 </div>
 
-{% endblock %} 
+{% endblock %}

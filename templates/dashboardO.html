@@ -14,7 +14,35 @@ Register
 {% endfor %}
 
 <div class="container">
-    <h1>Hi, {{ current_user.Name }} </h1>
+  <h1>Hi, {{ current_user.Name }} </h1>
+  <h3>Your Event:</h3>
+  <!-- Here we have to list down the events (Just list down them, give options to add, Modify and delete events) -->
+  {% if events  %} 
+    {% for event in events %}
+    <div class="shadow p-3 mb-5 bg-body rounded">
+      <div class="h2">{{ event.EventName }}</div><br/>
+      <div class="h4">{{ event.EventVenue }}</div><br/>
+      <div class="h6">{{ event.EventRules }}</div><br/>
+      <div class="h5">{{ event.EventDateTime }}</div><br/>
+      <div class="h5">{{ event.EventContact }}</div><br/>
+      {% if status == 2 %}
+      <a class="btn btn-primary" href = "{{url_for('update',Id=event.Id)}}">Edit</a>
+      {% elif status == 1 %} 
+      <a class="btn btn-secondary disabled" href = "#">Requested</a>
+      {% else %}
+      <a class="btn btn-danger disabled" href = "#">Rejected</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <br/>
+    <br/>
+    <div class="h1">Sorry, No Live Events</div>
+    <a class= "btn btn-secondary" href="{{url_for('add_event_organizer')}}">
+      Add Event
+    </a>
+  {% endif %}
+
 </div>
 
 {% endblock %} 

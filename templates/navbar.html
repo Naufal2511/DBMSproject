@@ -14,17 +14,26 @@
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('add_event')}}">Add Event</a>
               </li>  
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('approve_requests')}}">Requests</a>
+              </li>  
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('logout')}}">Logout</a>
             </li>  
-            {% else %} 
+            {% elif current_user.UserType == 'Participant' %} 
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('dashboard_participant')}}">Home</a>
             </li>  
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('logout')}}">Logout</a>
             </li>  
-
+            {% else %} 
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('dashboard_organizer')}}">Home</a>
+              </li>  
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('logout')}}">Logout</a>
+              </li>  
             {% endif %} 
           {% else %} 
           <li class="nav-item">
