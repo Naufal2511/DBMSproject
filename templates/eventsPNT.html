@@ -20,6 +20,10 @@ Register
     <div class="h6">{{ event.EventRules }}</div><br/>
     <div class="h5">{{ event.EventDateTime }}</div><br/>
     <div class="h5">{{ event.EventContact }}</div><br/>
+    {% eventName = eventName.replace(" ","") %} 
+    {% eventName = ''.join(char for char in eventName if char.isalnum()) %} 
+    {% sql_search = "SELECT Pid FROM {} WHERE Pid = {}".format(eventName,current_user.Id) %} 
+    {% my_cursor.execute(sql_search) %}
     
     <a class="btn btn-primary" href = "{{url_for('register_event',Id=event.Id)}}">Register</a>
   </div>
@@ -27,4 +31,3 @@ Register
 {% endfor %} 
 
 {% endblock %}
-

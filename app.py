@@ -9,6 +9,7 @@ from flask_migrate import Migrate
 from datetime import datetime 
 from wtforms.widgets import TextArea
 from flask_login import UserMixin,login_user,LoginManager,login_required,logout_user,current_user
+import mysql.connector
 
 app = Flask(__name__)  # __name__ is a variable that can be accessed by any python file
 #render_template is used to load different HTML Pages stored in templates folder.
@@ -17,6 +18,14 @@ app.config['SECRET_KEY'] = "jdhsjjhhjshjkhskdsj"
 
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
+mydb = mysql.connector.connect(
+    host="localhost",
+    port=3308,
+    user="root",
+    password="",
+    db="project")
+mydb.autocommit = True
+my_cursor = mydb.cursor(buffered=True) 
 
 class User(db.Model,UserMixin):
     Id = db.Column(db.Integer,primary_key = True)
@@ -182,12 +191,21 @@ def login():
 #     if(current_user.UserType == 'Organiser'):
 #         return redirect(url_for('dashboard_organiser')) 
 
-@app.route('/event_participant')
+@app.route('/event_participant_t')
 @login_required
 def eventsPT():
     events = Events.query.filter_by(EventType = 'Technical')
     return render_template('eventsPT.html',
-        events = events)
+        events = events,
+         my_cursor=my_cursor)
+
+@app.route('/event_participant_nt')
+@login_required
+def eventsPNT():
+    events = Events.query.filter_by(EventType = 'Non-technical')
+    return render_template('eventsPNT.html',
+        events = events,
+        my_cursor=my_cursor)
 
 @app.route('/dashboard_participant')
 @login_required
@@ -208,11 +226,12 @@ def dashboard_organiser():
 @app.route('/dashboard_admin')
 @login_required
 def dashboard_admin():
-    if(current_user.is_authenticated):
+    if(current_user.is_authenticated and current_user.UserType == 'Admin'):
         events = Events.query.all()
         return render_template("dashboardA.html",
             events = events)
     else:
+        flash("Something went wrong")
         return redirect('login')
 
 @app.route('/add_event',methods=['POST','GET'])
@@ -298,6 +317,37 @@ def index():
         firstName = firstName,
         stuff =stuff,
         favoritePizza=favoritePizza)
+
+@app.route('/register_event/<int:Id>')
+@login_required
+def register_event(Id):
+    flag = 0 
+    event = Events.query.get_or_404(Id)
+    my_cursor.execute("SHOW TABLES")
+    eventName = event.EventName
+    eventName = eventName.replace(" ","")
+    eventName = ''.join(char for char in eventName if char.isalnum())
+
+    for tables in my_cursor:
+        print(tables)
+        if(eventName == tables[0]):
+            flag = 1
+            break 
+    
+    if(flag == 0):
+
+        sql = "CREATE TABLE {} (Id int PRIMARY KEY AUTO_INCREMENT,Pid int NOT NULL UNIQUE);".format(eventName)
+        print(sql)
+        my_cursor.execute(sql)
+
+    sql_insert = "INSERT INTO {0} (Pid) values ({1});".format(eventName,current_user.Id)
+    print(sql_insert)
+    my_cursor.execute(sql_insert)
+
+
+    return redirect(url_for('dashboard_participant'))
+
+    
 
 #Creating custom error pages
 @app.errorhandler(404)

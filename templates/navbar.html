@@ -7,9 +7,25 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           {% if current_user.is_authenticated %} 
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('logout')}}">Logout</a>
-          </li>  
+            {% if current_user.UserType == 'Admin' %} 
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('dashboard_admin')}}">Home</a>
+              </li>  
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('add_event')}}">Add Event</a>
+              </li>  
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout')}}">Logout</a>
+            </li>  
+            {% else %} 
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('dashboard_participant')}}">Home</a>
+            </li>  
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout')}}">Logout</a>
+            </li>  
+
+            {% endif %} 
           {% else %} 
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('register')}}">Register</a>
