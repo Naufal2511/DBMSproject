@@ -127,6 +127,13 @@ class AddEventForm(FlaskForm):
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+def getProperTabName(name):
+    eventName = name.replace(" ","")
+    eventName = ''.join(char for char in eventName if char.isalnum())
+    return eventName
+
+
 @login_manager.user_loader
 def load_user(user_id):
 	return User.query.get(int(user_id))
@@ -195,17 +202,97 @@ def login():
 @login_required
 def eventsPT():
     events = Events.query.filter_by(EventType = 'Technical')
+    lst = []
+    for event in events:
+        flag = 0 
+        my_cursor.execute("SHOW TABLES")
+        eventName = event.EventName
+        eventName = eventName.replace(" ","")
+        eventName = ''.join(char for char in eventName if char.isalnum())
+        for tables in my_cursor:
+            print(tables)
+            if(eventName == tables[0]):
+                flag = 1
+                break 
+        if(flag == 0):
+            sql = "CREATE TABLE {} (Id int PRIMARY KEY AUTO_INCREMENT,Pid int NOT NULL UNIQUE);".format(eventName)
+            print(sql)
+            my_cursor.execute(sql)
+
+        lst1 = []
+        
+        sql_search = "SELECT Pid FROM {} WHERE Pid = {}".format(eventName,current_user.Id)
+        print(sql_search)
+        lst1.append(event.Id)
+        lst1.append(event.EventName)
+        lst1.append(event.EventVenue)
+        lst1.append(event.EventRules)
+        lst1.append(event.EventDateTime)
+        lst1.append(event.EventContact)
+        my_cursor.execute(sql_search)
+        Events_w = my_cursor.fetchall()
+        print(Events_w)
+        try:
+            if(len(Events_w[0]) > 0):
+                lst1.append(1)      
+            else:
+                lst1.append(0)  
+        except:
+            lst1.append(0)
+        
+        lst.append(lst1)
+
     return render_template('eventsPT.html',
         events = events,
-         my_cursor=my_cursor)
+        lst = lst)
 
 @app.route('/event_participant_nt')
 @login_required
 def eventsPNT():
     events = Events.query.filter_by(EventType = 'Non-technical')
+    lst = []
+    for event in events:
+        flag = 0 
+        my_cursor.execute("SHOW TABLES")
+        eventName = event.EventName
+        eventName = eventName.replace(" ","")
+        eventName = ''.join(char for char in eventName if char.isalnum())
+        for tables in my_cursor:
+            print(tables)
+            if(eventName == tables[0]):
+                flag = 1
+                break 
+        if(flag == 0):
+            sql = "CREATE TABLE {} (Id int PRIMARY KEY AUTO_INCREMENT,Pid int NOT NULL UNIQUE);".format(eventName)
+            print(sql)
+            my_cursor.execute(sql)
+
+        lst1 = []
+        
+        sql_search = "SELECT Pid FROM {} WHERE Pid = {}".format(eventName,current_user.Id)
+        print(sql_search)
+        lst1.append(event.Id)
+        lst1.append(event.EventName)
+        lst1.append(event.EventVenue)
+        lst1.append(event.EventRules)
+        lst1.append(event.EventDateTime)
+        lst1.append(event.EventContact)
+        my_cursor.execute(sql_search)
+        Events_w = my_cursor.fetchall()
+        print(Events_w)
+        try:
+            if(len(Events_w[0]) > 0):
+                lst1.append(1)      
+            else:
+                lst1.append(0)  
+        except:
+            lst1.append(0)
+
+        lst.append(lst1)
+
     return render_template('eventsPNT.html',
         events = events,
-        my_cursor=my_cursor)
+        lst = lst)
 
 @app.route('/dashboard_participant')
 @login_required
@@ -292,15 +379,22 @@ def update(Id):
                     record_to_update=record_to_update)
 @app.route('/delete/<int:Id>')
 def delete(Id):
-	try:
-		event_to_delete = Events.query.get_or_404(Id)
-		db.session.delete(event_to_delete)
-		db.session.commit()
-		flash("Successfully deleted")
-	except:
-		flash("unable to delete")
-		
-	return redirect(url_for("dashboard_admin"))
+    try:
+        event_to_delete = Events.query.get_or_404(Id)
+        eventName = event_to_delete.EventName
+        eventName = eventName.replace(" ","")
+        eventName = ''.join(char for char in eventName if char.isalnum())
+
+        sql_delete = "DROP TABLE {}".format(eventName)
+        my_cursor.execute(sql_delete)
+        db.session.delete(event_to_delete)
+        db.session.commit()
+        print(sql_delete)
+        flash("Successfully deleted")
+    except:
+        flash("unable to delete")
+    
+    return redirect(url_for("dashboard_admin"))
 
 @app.route("/logout")
 @login_required
@@ -321,24 +415,11 @@ def index():
 @app.route('/register_event/<int:Id>')
 @login_required
 def register_event(Id):
-    flag = 0 
     event = Events.query.get_or_404(Id)
     my_cursor.execute("SHOW TABLES")
     eventName = event.EventName
     eventName = eventName.replace(" ","")
     eventName = ''.join(char for char in eventName if char.isalnum())
-
-    for tables in my_cursor:
-        print(tables)
-        if(eventName == tables[0]):
-            flag = 1
-            break 
-    
-    if(flag == 0):
-
-        sql = "CREATE TABLE {} (Id int PRIMARY KEY AUTO_INCREMENT,Pid int NOT NULL UNIQUE);".format(eventName)
-        print(sql)
-        my_cursor.execute(sql)
 
     sql_insert = "INSERT INTO {0} (Pid) values ({1});".format(eventName,current_user.Id)
     print(sql_insert)

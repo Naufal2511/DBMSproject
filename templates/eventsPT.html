@@ -13,16 +13,19 @@ Register
 
 {% endfor %}
 
-{% for event in events %}  
+{% for item in lst %}  
 <div class="shadow p-3 mb-5 bg-body rounded">
-    <div class="h2">{{ event.EventName }}</div><br/>
-    <div class="h4">{{ event.EventVenue }}</div><br/>
-    <div class="h6">{{ event.EventRules }}</div><br/>
-    <div class="h5">{{ event.EventDateTime }}</div><br/>
-    <div class="h5">{{ event.EventContact }}</div><br/>
-    
-    <a class="btn btn-primary" href = "{{url_for('register_event',Id=event.Id)}}">Register</a>
-  </div>
+    <div class="h2">{{ item[1] }}</div><br/>
+    <div class="h4">{{ item[2] }}</div><br/>
+    <div class="h6">{{ item[3] }}</div><br/>
+    <div class="h5">{{ item[4] }}</div><br/>
+    <div class="h5">{{ item[5] }}</div><br/>
+    {% if item[6] == 1 %}
+     <a class="btn btn-secondary disabled" href = "#">Registered</a> 
+    {% else %}
+    <a class="btn btn-primary" href = "{{url_for('register_event',Id=item[0])}}">Register</a> 
+    {% endif %}
+</div>
 
 {% endfor %} 
 
