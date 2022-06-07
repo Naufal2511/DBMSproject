@@ -293,13 +293,15 @@ def dashboard_participant():
 @login_required
 def dashboard_organizer():
     if(current_user.is_authenticated and current_user.UserType == 'Organizer'):
-        organiserTag = RequestedEvents.query.filter_by(OrganizerId = current_user.Id).first()
+        organiserTag = RequestedEvents.query.filter_by(OrganizerId = current_user.Id).all()
+        # org = Organizer.query.filter_by(userId = organiserTag.OrganizerId)
+
         if organiserTag is None:
             events = None
             return render_template("dashboardO.html",events=events)
         else:
-            events = Events.query.filter_by(Id = organiserTag.EventId)
-            return render_template("dashboardO.html",events=events,status=organiserTag.Status)
+            # events = Req.query.filter_by(Id = org.EventId)
+            return render_template("dashboardO.html",events=organiserTag)
 
     else:
         return redirect('login')
@@ -420,6 +422,32 @@ def add_event():
         flash("You should be an admin to edit")
         return redirect('home.html')
 
+@app.route('/updateO/<int:Id>',methods=['POST','GET'])
+def updateO(Id):
+    form = AddEventForm()
+    eventId = Organizer.query.filter_by(userId = Id).first().EventId
+    record_to_update = Events.query.get_or_404(eventId)
+    if request.method == 'POST':
+        record_to_update.EventName = request.form['eventname']
+        record_to_update.EventVenue = request.form['eventvenue']
+        record_to_update.EventRules = request.form['eventrules']
+        record_to_update.EventDateTime = request.form['eventdatetime']
+        record_to_update.EventContact = request.form['eventcontact']
+        try:
+            db.session.commit()
+            flash("Event Updated Successfully")
+            return render_template("eventupdate.html",
+                    form=form,
+                    record_to_update=record_to_update)
+        except:
+            flash("Event could not be updated")
+            return render_template("eventupdate.html",
+                    form=form,
+                    record_to_update=record_to_update)
+    else:
+        return render_template("eventupdate.html",
+                    form=form,
+                    record_to_update=record_to_update)
 @app.route('/update/<int:Id>',methods=['POST','GET'])
 def update(Id):
     form = AddEventForm()

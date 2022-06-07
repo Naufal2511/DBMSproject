@@ -25,9 +25,9 @@ Register
       <div class="h6">{{ event.EventRules }}</div><br/>
       <div class="h5">{{ event.EventDateTime }}</div><br/>
       <div class="h5">{{ event.EventContact }}</div><br/>
-      {% if status == 2 %}
-      <a class="btn btn-primary" href = "{{url_for('update',Id=event.Id)}}">Edit</a>
-      {% elif status == 1 %} 
+      {% if event.Status == 2 %}
+      <a class="btn btn-primary" href = "{{url_for('updateO',Id=event.OrganizerId)}}">Edit</a>
+      {% elif event.Status == 1 %} 
       <a class="btn btn-secondary disabled" href = "#">Requested</a>
       {% else %}
       <a class="btn btn-danger disabled" href = "#">Rejected</a>
