@@ -2,6 +2,16 @@
 {% block title %} 
 Register
 {% endblock %}  
+{% block css %}
+<style>
+.zoom:hover {
+  -ms-transform: scale(0.1); /* IE 9 */
+  -webkit-transform: scale(0.7); /* Safari 3-8 */
+  transform: scale(1.03); 
+}
+</style>
+
+{% endblock %}
 {% block content %}
 
 {% for message in get_flashed_messages() %}
@@ -15,26 +25,52 @@ Register
 
 <div class="container">
     <h1>Hi, {{ current_user.Name }} </h1>
+    <br/>
     <!-- Here we have to list down the events (Just list down them, give options to add, Modify and delete events) -->
-
-    <a class= "btn btn-secondary" href="{{url_for('add_event')}}">
-      Add Event
-    </a>
     {% if events  %} 
 
       {% for event in events %}
-      <div class="shadow p-3 mb-5 bg-body rounded">
-        <div class="h2">{{ event.EventName }}</div><br/>
-        <div class="h4">{{ event.EventVenue }}</div><br/>
-        <div class="h6">{{ event.EventRules }}</div><br/>
-        <div class="h5">{{ event.EventDateTime }}</div><br/>
-        <div class="h5">{{ event.EventPrize }}</div><br/>
-        <div class="h5">{{ event.EventContact }}</div><br/>
+      <div class="zoom">
+        <div class="shadow p-3 mb-5 bg-body rounded text-center" style=" background-image: linear-gradient(to right, gray, white); border-style: outset">
+          <table class="table table-bordered">
+            <tbody>
+              <tr>
+                <td colspan="2"><h1 class="text-center">{{ event.EventName }}</h1></td>
+              </tr>
+              <tr>
+                <th scope="row"><h4>VENUE</h4></th>
+                <td><h4>{{ event.EventVenue }}</h4></td>
+              </tr>
+              <tr>
+                <th scope="row"><h4>DESCRIPTION</h4></th>
+                <td><h4>{{ event.EventRules }}</h4></td>
+              </tr>
+              <tr>
+                <th scope="row"><h4>DATE</h4></th>
+                <td><h4>{{ event.EventDateTime }}</h4></td>
+              </tr>
+              <tr>
+                <th scope="row"><h4>CONTACT NUMBER</h4></th>
+                <td><h4>{{ event.EventContact }}</h4></td>
+              </tr>
+              <tr>
+                <th scope="row"><h4>PRIZE MONEY</h4></th>
+                <td><h4>{{ event.EventPrize }}</h4></td>
+              </tr> 
+            </tbody>
+          </table>
         
         <a class="btn btn-primary" href = "{{url_for('update',Id=event.Id)}}">Edit</a>
         <a class="btn btn-danger" href = "{{url_for('delete',Id=event.Id)}}">Delete</a>
+        <a class="btn btn-outline-primary" href = "{{url_for('detailsP',Name=event.EventName)}}">Details</a>
+
       </div>
       {% endfor %}
+      <div class="container-fluid text-center" style="padding: 32px 20px">
+        <a class= "btn btn-secondary" href="{{url_for('add_event')}}">
+          Add Event
+         </a> 
+      </div>
     {% else %}
       <br/>
       <br/>

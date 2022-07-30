@@ -14,14 +14,16 @@ Register
 {% endfor %}
 
 <div class="container">
-    <div class="shadow p-3 mb-5 bg-body rounded">
-        <h3>Name : {{ current_user.Name }}</h3><br/>
+    <div class="shadow p-3 mb-5 rounded" style=" background-color: lightgray;">
+        <h3>Name : {{ current_user.Name }}</h3><br>
         <h3>UserName : {{current_user.Username}}</h3>
     </div>
+</div>
     <div class="container">
-        <div class="row justify-content-sm-center">
-            <div class="card col-3 ">
-                <img class="card-img-top " src="images/download.jpeg" style="width: 345px;height: 200px;" alt="Card image cap">
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+            <div style=" background-color: lightgray;">
+                <img class="card-img-top " src="/static/images/tech.jpeg" style="object-fit: cover; width: 100% ;height: 300px;" alt="Card image cap">
                 <div class="card-body">
                 <h5 class="card-title">Technical Events</h5>
                 <p class="card-text">Show off your technical skills and passion by entering the worlds finest tech events.</p>
@@ -30,8 +32,10 @@ Register
                 <small class="text-muted"><a href = "{{url_for('eventsPT')}}" class="btn btn-info">Enter</a></small>
                 </div>
             </div>
-            <div class="card col-3">
-                <img class="card-img-top " src="images/download.jpeg" style="width: 345px;height: 200px;" alt="Card image cap">
+            </div>
+            <div class="col-lg-6 mb-4">
+            <div style=" background-color: lightgray;">
+                <img class="card-img-top " src="/static/images/nontech.jpeg" style="width: 100% ;height: 300px;" alt="Card image cap">
                 <div class="card-body">
                 <h5 class="card-title">Non-Technical Events</h5>
                 <p class="card-text">Want to explore outside tech ? Enter to join the world of exploration with amazing non-tech events.</p>
@@ -40,8 +44,9 @@ Register
                 <small class="text-muted"><a href = "{{url_for('eventsPNT')}}" class="btn btn-info">Enter</a></small>
                 </div>
             </div>
+            </div>
         </div>
     </div>
 </div>
 
-{% endblock %} 
+{% endblock %}

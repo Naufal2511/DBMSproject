@@ -14,11 +14,27 @@ Register
 {% endfor %}
 
 <div class="container">
-    <div class="shadow p-3 mb-5 bg-body rounded">
-        <div class="h2">{{ record_to_update.Name }}</div><br/>
-        <div class="h3">{{ record_to_update.Username }}</div><br/>
-        <div class="h4">{{ record_to_update.Email }}</div><br/>
-        <div class="h6">{{ record_to_update.Phone }}</div><br/>
+    <div class="shadow p-3 mb-5 bg-body rounded text-center" style=" background-image: linear-gradient(to right, gray, white); border-style: outset">
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <td colspan="2"><h1 class="text-center">{{ record_to_update.Name }}</h1></td>
+            </tr>
+            <tr>
+              <th scope="row"><h4>USERNAME</h4></th>
+              <td><h4>{{ record_to_update.Username }}</h4></td>
+            </tr>
+            <tr>
+              <th scope="row"><h4>EMAIL</h4></th>
+              <td><h4>{{ record_to_update.Email }}</h4></td>
+            </tr>
+            <tr>
+              <th scope="row"><h4>CONTACT NUMBER</h4></th>
+              <td><h4>{{ record_to_update.Phone }}</h4></td>
+            </tr>
+          </tbody>
+        </table>
+
     </div>
 </div>
 

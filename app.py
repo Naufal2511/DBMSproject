@@ -51,7 +51,7 @@ class User(db.Model,UserMixin):
         return check_password_hash(self.PasswordHashed,password)
         # Create A String
     def __repr__(self):
-        return '<Name %r>' % self.name
+        return '<Name %r>' % self.Name
 
 class Events(db.Model,UserMixin):
     Id = db.Column(db.Integer,primary_key = True)
@@ -171,9 +171,7 @@ def login():
                     flash("Redirecting to Admin Page")
                     return redirect(url_for('dashboard_admin'))
             else:
-                flash("Wrong Password")
-        else:
-            flash("This user doesnt exist")		
+                flash("Wrong Password")	
 
     return render_template('login.html',
 		form = form)
@@ -184,6 +182,41 @@ def login():
 #         return redirect(url_for('dashboard_participant')) 
 #     if(current_user.UserType == 'Organiser'):
 #         return redirect(url_for('dashboard_organiser')) 
+@app.route('/detailsP/<Name>')
+@login_required
+def detailsP(Name):
+    flag = 0 
+    my_cursor.execute("SHOW TABLES")
+    eventName = str(Name)
+    eventName = eventName.replace(" ","")
+    eventName = ''.join(char for char in eventName if char.isalnum())
+    for tables in my_cursor:
+        print(tables)
+        if(eventName == tables[0]):
+            flag = 1
+            break 
+    if flag == 1:
+        sql_show = "SELECT Pid FROM {}".format(eventName) 
+        print(sql_show)
+        my_cursor.execute(sql_show)
+        Events_w = my_cursor.fetchall()
+        lst = []
+        if len(Events_w) > 0:
+            print("Events")
+            for event in Events_w:
+                lst1 = []
+                obj = User.query.filter_by(Id = event[0]).first()
+                print(obj)
+                lst1.append(obj.Username)
+                lst1.append(obj.Name)
+                lst1.append(obj.Email)
+                lst1.append(obj.Phone)
+                lst.append(lst1)
+        else:
+            lst = None
+    else:
+        lst = None
+    return render_template('detailsP.html',lst = lst)
 
 @app.route('/event_participant_t')
 @login_required
@@ -433,6 +466,8 @@ def updateO(Id):
         record_to_update.EventRules = request.form['eventrules']
         record_to_update.EventDateTime = request.form['eventdatetime']
         record_to_update.EventContact = request.form['eventcontact']
+        record_to_update.EventPrize = request.form['eventprize']
+
         try:
             db.session.commit()
             flash("Event Updated Successfully")
@@ -458,6 +493,7 @@ def update(Id):
         record_to_update.EventRules = request.form['eventrules']
         record_to_update.EventDateTime = request.form['eventdatetime']
         record_to_update.EventContact = request.form['eventcontact']
+        record_to_update.EventPrize = request.form['eventprize']
         try:
             db.session.commit()
             flash("Event Updated Successfully")
@@ -514,7 +550,7 @@ def register_event(Id):
     sql_insert = "INSERT INTO {0} (Pid) values ({1});".format(eventName,current_user.Id)
     print(sql_insert)
     my_cursor.execute(sql_insert)
-
+    flash("Successfully Registered !")
     return redirect(url_for('dashboard_participant'))
 
 #Creating custom error pages

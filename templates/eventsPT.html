@@ -13,21 +13,45 @@ Register
 
 {% endfor %}
 
+{% if lst %}
 {% for item in lst %}  
-<div class="shadow p-3 mb-5 bg-body rounded">
-    <div class="h2">{{ item[1] }}</div><br/>
-    <div class="h4">{{ item[2] }}</div><br/>
-    <div class="h6">{{ item[3] }}</div><br/>
-    <div class="h5">{{ item[4] }}</div><br/>
-    <div class="h5">{{ item[5] }}</div><br/>
-    {% if item[6] == 1 %}
-     <a class="btn btn-secondary disabled" href = "#">Registered</a> 
-    {% else %}
-    <a class="btn btn-primary" href = "{{url_for('register_event',Id=item[0])}}">Register</a> 
-    {% endif %}
-</div>
+    <div class="shadow p-3 mb-5 bg-body rounded text-center" style=" background-image: linear-gradient(to right, gray, white); border-style: outset">
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <td colspan="2"><h1 class="text-center">{{ item[1] }}</h1></td>
+            </tr>
+            <tr>
+              <th scope="row"><h4>VENUE</h4></th>
+              <td><h4>{{ item[2] }}</h4></td>
+            </tr>
+            <tr>
+              <th scope="row"><h4>DESCRIPTION</h4></th>
+              <td><h4>{{ item[3] }}</h4></td>
+            </tr>
+            <tr>
+              <th scope="row"><h4>DATE</h4></th>
+              <td><h4>{{ item[4] }}</h4></td>
+            </tr>
+            <tr>
+              <th scope="row"><h4>CONTACT NUMBER</h4></th>
+              <td><h4>{{ item[5] }}</h4></td>
+            </tr>
+          </tbody>
+        </table>
+        {% if item[6] == 1 %}
+        <a class="btn btn-success disabled" href = "#">Registered</a> 
+       {% else %}
+       <a class="btn btn-primary" href = "{{url_for('register_event',Id=item[0])}}">Register</a> 
+       {% endif %}
+   </div>
+   <br/>
+   <br/>
 
 {% endfor %} 
 
+{% else %} 
+<h2>No Events Available</h2>
+{% endif %}
 {% endblock %}
 
